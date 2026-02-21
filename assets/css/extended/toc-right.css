@@ -1,38 +1,57 @@
-/* 右侧固定目录样式 */
+/* ===== 桌面端：双栏 flex + sticky TOC ===== */
 @media screen and (min-width: 1200px) {
-  .post-single {
-    max-width: 900px;
-    margin: 0 auto;
-    position: relative;
+  /* 仅文章详情页放宽 main 容器宽度，为右侧 TOC 腾出空间 */
+  body:not(.list) .main {
+    max-width: 1200px;
   }
 
-  .toc {
-    position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 280px;
-    max-height: 70vh;
+  body:not(.list) .post-single {
+    max-width: 100%;
+  }
+
+  /* flex 双栏布局 */
+  .post-body {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .post-body__content {
+    flex: 1;
+    min-width: 0; /* 防止 flex 子元素溢出 */
+  }
+
+  .post-body__toc {
+    flex-shrink: 0;
+    width: 260px;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
     overflow-y: auto;
+  }
+
+  /* TOC 卡片样式 */
+  .post-body__toc .toc {
     background: var(--entry);
     border: 1px solid var(--border);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 100;
-    transition: opacity 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .toc details {
     margin: 0;
   }
 
-  .toc summary {
+  .toc summary,
+  .toc details summary,
+  .toc details[open] summary {
     padding: 12px 16px;
     font-weight: 600;
     color: var(--primary);
     cursor: pointer;
     border-bottom: 1px solid var(--border);
     background: var(--code-bg);
+    border-radius: 8px 8px 0 0;
   }
 
   .toc summary:hover {
@@ -50,13 +69,11 @@
     list-style: none;
   }
 
-  /* 优化缩进：极简层级缩进 */
   .toc ul ul {
     padding-left: 2px;
     margin-top: 2px;
   }
 
-  /* 限制最大缩进层级，避免过深的嵌套 */
   .toc ul ul ul {
     padding-left: 2px;
   }
@@ -65,7 +82,6 @@
     padding-left: 2px;
   }
 
-  /* 超过4层嵌套不再增加缩进 */
   .toc ul ul ul ul ul,
   .toc ul ul ul ul ul ul {
     padding-left: 2px;
@@ -119,9 +135,9 @@
   .toc a:hover {
     color: var(--primary);
     border-left-color: var(--theme);
+    box-shadow: none;
   }
 
-  /* 活动状态样式 */
   .toc a:target,
   .toc a.active {
     background: var(--theme);
@@ -129,40 +145,45 @@
     border-left-color: var(--primary);
   }
 
-  /* 滚动条美化 */
-  .toc::-webkit-scrollbar {
-    width: 6px;
+  /* 侧边 TOC 滚动条美化 */
+  .post-body__toc::-webkit-scrollbar {
+    width: 4px;
   }
 
-  .toc::-webkit-scrollbar-track {
-    background: var(--code-bg);
-    border-radius: 3px;
+  .post-body__toc::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .toc::-webkit-scrollbar-thumb {
+  .post-body__toc::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 3px;
+    border-radius: 2px;
   }
 
-  .toc::-webkit-scrollbar-thumb:hover {
+  .post-body__toc::-webkit-scrollbar-thumb:hover {
     background: var(--secondary);
-  }
-
-  /* 当屏幕宽度不足时隐藏右侧目录，避免遮挡文章内容 */
-  @media screen and (max-width: 1400px) {
-    .toc {
-      right: 10px;
-      width: 260px;
-    }
   }
 }
 
-/* 平板和手机设备：目录保持原位置 */
+/* ===== 移动端/平板：单栏布局，TOC 内联显示 ===== */
 @media screen and (max-width: 1199px) {
+  .post-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 移动端让 TOC 排在正文前面 */
+  .post-body__toc {
+    order: -1;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-body__content {
+    order: 0;
+  }
+
   .toc {
     position: relative;
     width: 100%;
-    margin-bottom: 2rem;
     background: var(--code-bg);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -178,7 +199,7 @@
   }
 }
 
-/* 暗色模式适配 */
+/* ===== 暗色模式适配 ===== */
 [data-theme="dark"] .toc {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
