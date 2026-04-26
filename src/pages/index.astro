@@ -1,0 +1,169 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Socials from "@/components/Socials.astro";
+import LinkButton from "@/components/LinkButton.astro";
+import Card from "@/components/Card.astro";
+import YearCountdown from "@/components/YearCountdown.astro";
+import getSortedPosts from "@/utils/getSortedPosts";
+import IconRss from "@/assets/icons/IconRss.svg";
+import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
+import { SITE } from "@/config";
+import { SOCIALS } from "@/constants";
+
+const posts = await getCollection("blog");
+
+const sortedPosts = getSortedPosts(posts);
+const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
+const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
+---
+
+<Layout>
+  <Header />
+  <main id="main-content" data-layout="index" class="app-layout">
+    <section
+      id="hero"
+      class="flex flex-col items-center border-b border-border pt-8 pb-10 text-center"
+    >
+      <img
+        src="https://github.com/wangx-wx.png"
+        alt="wx 头像"
+        width="144"
+        height="144"
+        class="h-36 w-36 rounded-full shadow-lg"
+      />
+      <h1 class="mt-6 text-3xl font-bold sm:text-4xl">你好,我是 wx</h1>
+      <p class="mx-auto mt-4 max-w-2xl text-base sm:text-lg">
+        我是一名热爱编程和技术的开发者,专注于后端开发与系统架构设计。
+      </p>
+      <div class="mt-6 flex items-center justify-center gap-4">
+        <a
+          href="/rss.xml"
+          class="inline-block"
+          aria-label="rss feed"
+          title="RSS Feed"
+        >
+          <IconRss
+            width={20}
+            height={20}
+            class="scale-125 stroke-accent stroke-3"
+          />
+          <span class="sr-only">RSS Feed</span>
+        </a>
+        {SOCIALS.length > 0 && <Socials />}
+      </div>
+    </section>
+
+    <YearCountdown />
+
+    <section class="grid gap-8 border-b border-border py-10 sm:grid-cols-2">
+      <div>
+        <h2 class="text-xl font-semibold text-accent">🚀 技术栈</h2>
+        <ul class="mt-3 space-y-1.5 text-sm">
+          <li>编程语言:Java、Go、Python</li>
+          <li>数据库:MySQL、PostgreSQL</li>
+          <li>其他:Spring Boot、Docker、Kubernetes、Redis</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-accent">🔧 项目经验</h2>
+        <ul class="mt-3 space-y-1.5 text-sm">
+          <li>全栈开发项目经验</li>
+          <li>微服务架构设计与落地</li>
+          <li>DevOps 自动化部署实践</li>
+          <li>开源项目贡献者</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-accent">📚 兴趣爱好</h2>
+        <ul class="mt-3 space-y-1.5 text-sm">
+          <li>阅读技术博客和书籍</li>
+          <li>参与开源社区</li>
+          <li>学习新技术和分享经验</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-accent">📫 联系我</h2>
+        <ul class="mt-3 space-y-1.5 text-sm">
+          <li>
+            GitHub:
+            <a
+              href="https://github.com/wangx-wx"
+              class="underline decoration-dashed underline-offset-4 hover:text-accent"
+              >wangx-wx</a
+            >
+          </li>
+          <li>
+            邮箱:
+            <a
+              href="mailto:wangx.coding@gmail.com"
+              class="underline decoration-dashed underline-offset-4 hover:text-accent"
+              >wangx.coding@gmail.com</a
+            >
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <blockquote
+      class="my-8 border-l-4 border-accent bg-muted/60 px-5 py-4 italic"
+    >
+      <p>
+        欢迎交流!无论是技术探讨、项目合作,还是单纯打个招呼,都很乐意认识志同道合的朋友。让我们一起在技术的道路上不断前行!💪
+      </p>
+    </blockquote>
+
+    {
+      featuredPosts.length > 0 && (
+        <section
+          id="featured"
+          class:list={[
+            "pt-8 pb-6",
+            { "border-b border-border": recentPosts.length > 0 },
+          ]}
+        >
+          <h2 class="text-2xl font-semibold tracking-wide">精选文章</h2>
+          <ul>
+            {featuredPosts.map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      recentPosts.length > 0 && (
+        <section id="recent-posts" class="pt-8 pb-6">
+          <h2 class="text-2xl font-semibold tracking-wide">最新文章</h2>
+          <ul>
+            {recentPosts.map(
+              (data, index) =>
+                index < SITE.postPerIndex && <Card variant="h3" {...data} />
+            )}
+          </ul>
+        </section>
+      )
+    }
+
+    <div class="my-8 text-center">
+      <LinkButton href="/posts/">
+        所有文章
+        <IconArrowRight class="inline-block rtl:-rotate-180" />
+      </LinkButton>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const indexLayout = (document.querySelector("#main-content") as HTMLElement)
+      ?.dataset?.layout;
+    if (indexLayout) {
+      sessionStorage.setItem("backUrl", "/");
+    }
+  });
+</script>

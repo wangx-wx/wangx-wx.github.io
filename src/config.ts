@@ -1,0 +1,23 @@
+export const SITE = {
+  website: "https://wangx-wx.github.io/",
+  author: "wx",
+  profile: "https://github.com/wangx-wx",
+  desc: "wangx,分享技术与生活。",
+  title: "wangx",
+  ogImage: "og.png",
+  lightAndDarkMode: true,
+  postPerIndex: 5,
+  postPerPage: 10,
+  scheduledPostMargin: 15 * 60 * 1000,
+  showArchives: true,
+  showBackButton: true,
+  editPost: {
+    enabled: false,
+    text: "",
+    url: "",
+  },
+  dynamicOgImage: true,
+  dir: "ltr",
+  lang: "zh-CN",
+  timezone: "Asia/Shanghai",
+} as const;

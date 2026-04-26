@@ -1,0 +1,181 @@
+<section
+  class="my-10 rounded-2xl border border-border bg-muted/45 p-6 shadow-sm"
+  aria-label="年度倒计时"
+  data-year-countdown
+>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-xs tracking-[0.22em] text-accent">YEAR COUNTDOWN</p>
+      <h2 class="mt-2 text-2xl font-semibold sm:text-3xl">
+        <span data-year-label>--</span>
+        <span class="ml-2 text-lg">年度进度</span>
+      </h2>
+    </div>
+    <p class="text-right text-sm text-foreground/80">
+      已过去 <span class="font-semibold text-foreground" data-elapsed-label
+        >--</span
+      >
+    </p>
+  </div>
+
+  <div class="mt-5">
+    <div class="flex items-center justify-between text-xs text-foreground/70">
+      <span>已过 <span data-progress-percent>--</span></span>
+      <span>剩余 <span data-remaining-percent>--</span></span>
+    </div>
+    <div class="mt-2 h-3 overflow-hidden rounded-full bg-background/70">
+      <div
+        class="h-full rounded-full bg-gradient-to-r from-accent via-sky-500 to-teal-500 transition-[width] duration-700 ease-out"
+        style="width: 0%"
+        data-progress-bar
+      >
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="mt-6 grid grid-cols-2 gap-3 text-center sm:grid-cols-4"
+    aria-live="polite"
+  >
+    <div class="rounded-xl border border-border bg-background/70 px-3 py-3">
+      <p class="text-2xl font-bold tabular-nums" data-days>00</p>
+      <p class="mt-1 text-xs text-foreground/70">天</p>
+    </div>
+    <div class="rounded-xl border border-border bg-background/70 px-3 py-3">
+      <p class="text-2xl font-bold tabular-nums" data-hours>00</p>
+      <p class="mt-1 text-xs text-foreground/70">时</p>
+    </div>
+    <div class="rounded-xl border border-border bg-background/70 px-3 py-3">
+      <p class="text-2xl font-bold tabular-nums" data-minutes>00</p>
+      <p class="mt-1 text-xs text-foreground/70">分</p>
+    </div>
+    <div class="rounded-xl border border-border bg-background/70 px-3 py-3">
+      <p class="text-2xl font-bold tabular-nums" data-seconds>00</p>
+      <p class="mt-1 text-xs text-foreground/70">秒</p>
+    </div>
+  </div>
+
+  <p class="mt-4 text-sm text-foreground/80">
+    距离下一年还有
+    <span class="font-semibold text-foreground" data-remaining-label>--</span>
+  </p>
+</section>
+
+<script>
+  const countdownTimers = new WeakMap<HTMLElement, number>();
+
+  const pad2 = (value: number) => String(value).padStart(2, "0");
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, value));
+
+  const formatLongDuration = (ms: number) => {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return { days, hours, minutes, seconds };
+  };
+
+  const computeYearCountdown = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const yearStart = new Date(currentYear, 0, 1, 0, 0, 0, 0);
+    const nextYearStart = new Date(currentYear + 1, 0, 1, 0, 0, 0, 0);
+    const totalMs = nextYearStart.getTime() - yearStart.getTime();
+    const elapsedMs = clamp(now.getTime() - yearStart.getTime(), 0, totalMs);
+    const remainingMs = Math.max(0, nextYearStart.getTime() - now.getTime());
+    const progress = clamp(elapsedMs / totalMs, 0, 1);
+    const elapsed = formatLongDuration(elapsedMs);
+    const remaining = formatLongDuration(remainingMs);
+
+    return {
+      year: currentYear,
+      progress,
+      elapsed,
+      remaining,
+    };
+  };
+
+  const renderCountdown = (root: HTMLElement) => {
+    const data = computeYearCountdown();
+    const elapsedLabel = `${data.elapsed.days}天 ${pad2(data.elapsed.hours)}时 ${pad2(data.elapsed.minutes)}分 ${pad2(data.elapsed.seconds)}秒`;
+    const remainingLabel = `${data.remaining.days}天 ${pad2(data.remaining.hours)}时 ${pad2(data.remaining.minutes)}分 ${pad2(data.remaining.seconds)}秒`;
+    const percent = (data.progress * 100).toFixed(2);
+
+    const yearLabel = root.querySelector("[data-year-label]");
+    const elapsedText = root.querySelector("[data-elapsed-label]");
+    const progressPercent = root.querySelector("[data-progress-percent]");
+    const remainingPercent = root.querySelector("[data-remaining-percent]");
+    const progressBar = root.querySelector("[data-progress-bar]");
+    const days = root.querySelector("[data-days]");
+    const hours = root.querySelector("[data-hours]");
+    const minutes = root.querySelector("[data-minutes]");
+    const seconds = root.querySelector("[data-seconds]");
+    const remainingText = root.querySelector("[data-remaining-label]");
+
+    if (
+      !yearLabel ||
+      !elapsedText ||
+      !progressPercent ||
+      !remainingPercent ||
+      !progressBar ||
+      !days ||
+      !hours ||
+      !minutes ||
+      !seconds ||
+      !remainingText
+    ) {
+      return;
+    }
+
+    yearLabel.textContent = `${data.year}`;
+    elapsedText.textContent = elapsedLabel;
+    progressPercent.textContent = `${percent}%`;
+    remainingPercent.textContent = `${(100 - data.progress * 100).toFixed(2)}%`;
+    progressBar.setAttribute("style", `width: ${percent}%`);
+    days.textContent = String(data.remaining.days);
+    hours.textContent = pad2(data.remaining.hours);
+    minutes.textContent = pad2(data.remaining.minutes);
+    seconds.textContent = pad2(data.remaining.seconds);
+    remainingText.textContent = remainingLabel;
+  };
+
+  const initCountdown = (root: HTMLElement) => {
+    const existingTimer = countdownTimers.get(root);
+    if (existingTimer) {
+      window.clearInterval(existingTimer);
+    }
+
+    renderCountdown(root);
+
+    const timer = window.setInterval(() => {
+      renderCountdown(root);
+    }, 1000);
+
+    countdownTimers.set(root, timer);
+  };
+
+  const bootYearCountdown = () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-year-countdown]")
+      .forEach(root => {
+        initCountdown(root);
+      });
+  };
+
+  const clearYearCountdownTimers = () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-year-countdown]")
+      .forEach(root => {
+        const timer = countdownTimers.get(root);
+        if (timer) {
+          window.clearInterval(timer);
+        }
+      });
+  };
+
+  document.addEventListener("astro:before-swap", clearYearCountdownTimers);
+  document.addEventListener("astro:page-load", bootYearCountdown);
+  bootYearCountdown();
+</script>
