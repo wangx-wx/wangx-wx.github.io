@@ -1,0 +1,28 @@
+---
+import { NOW_ITEMS } from "@/profile";
+---
+
+<section
+  class="my-10 rounded-2xl border border-border bg-muted/45 p-6 shadow-sm"
+  aria-label="最近在做"
+>
+  <div class="flex items-baseline justify-between gap-4">
+    <div>
+      <p class="text-xs tracking-[0.22em] text-accent">NOW</p>
+      <h2 class="mt-2 text-2xl font-semibold sm:text-3xl">最近在做</h2>
+    </div>
+    <p class="hidden text-xs text-foreground/60 sm:block">不定期更新</p>
+  </div>
+  <ul class="mt-5 space-y-3">
+    {
+      NOW_ITEMS.map(item => (
+        <li class="flex items-start gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 transition hover:border-accent/60">
+          <span class="mt-0.5 text-xl leading-none" aria-hidden>
+            {item.emoji}
+          </span>
+          <p class="text-sm leading-relaxed sm:text-base">{item.text}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>
