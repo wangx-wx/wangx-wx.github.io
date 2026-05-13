@@ -1,0 +1,131 @@
+---
+import type { MarkdownHeading } from "astro";
+
+type Props = {
+  headings: MarkdownHeading[];
+};
+
+const { headings = [] } = Astro.props;
+
+// 显示 h1~h4,h5/h6 太细
+const tocHeadings = headings.filter(h => h.depth >= 1 && h.depth <= 4);
+const minDepth =
+  tocHeadings.length > 0
+    ? Math.min(...tocHeadings.map(h => h.depth))
+    : 1;
+---
+
+{
+  tocHeadings.length > 0 && (
+    <aside
+      aria-label="文章目录"
+      class="pointer-events-none fixed top-28 right-4 z-10 hidden max-h-[calc(100vh-9rem)] w-60 overflow-y-auto xl:block"
+      data-toc-root
+    >
+      <div class="pointer-events-auto rounded-2xl border border-border bg-muted/40 p-4 shadow-sm backdrop-blur-sm">
+        <p class="text-[10px] tracking-[0.22em] text-accent">CONTENTS</p>
+        <h2 class="mt-1 mb-3 text-sm font-semibold text-foreground/80">
+          目录
+        </h2>
+        <ul class="space-y-0.5 text-sm">
+          {tocHeadings.map(h => (
+            <li
+              style={`padding-inline-start: ${(h.depth - minDepth) * 0.75}rem`}
+            >
+              <a
+                href={`#${h.slug}`}
+                data-toc-link={h.slug}
+                class="block border-l-2 border-border py-1 ps-3 leading-snug text-foreground/65 transition hover:border-accent hover:text-accent"
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  )
+}
+
+<script>
+  type TocCleanup = () => void;
+
+  let cleanup: TocCleanup | null = null;
+
+  function initToc() {
+    cleanup?.();
+    cleanup = null;
+
+    const root = document.querySelector<HTMLElement>("[data-toc-root]");
+    if (!root) return;
+
+    const links = Array.from(
+      root.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")
+    );
+    if (links.length === 0) return;
+
+    const idToLink = new Map<string, HTMLAnchorElement>();
+    for (const link of links) {
+      const id = link.dataset.tocLink;
+      if (id) idToLink.set(id, link);
+    }
+
+    const headings = Array.from(idToLink.keys())
+      .map(id => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (headings.length === 0) return;
+
+    let activeId: string | null = null;
+
+    const applyActive = (link: HTMLAnchorElement) => {
+      link.classList.remove("text-foreground/65", "border-border");
+      link.classList.add("text-accent", "border-accent", "font-medium");
+    };
+
+    const clearActive = (link: HTMLAnchorElement) => {
+      link.classList.remove("text-accent", "border-accent", "font-medium");
+      link.classList.add("text-foreground/65", "border-border");
+    };
+
+    const setActive = (id: string | null) => {
+      if (activeId === id) return;
+      if (activeId) {
+        const prev = idToLink.get(activeId);
+        if (prev) clearActive(prev);
+      }
+      activeId = id;
+      if (id) {
+        const next = idToLink.get(id);
+        if (next) applyActive(next);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      entries => {
+        // 取最靠近视口顶部的可见标题作为 active
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort(
+            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
+          );
+        if (visible.length > 0) {
+          setActive(visible[0].target.id);
+        }
+      },
+      {
+        rootMargin: "-80px 0px -70% 0px",
+        threshold: [0, 1],
+      }
+    );
+
+    headings.forEach(h => observer.observe(h));
+
+    cleanup = () => observer.disconnect();
+  }
+
+  document.addEventListener("astro:page-load", initToc);
+  document.addEventListener("astro:before-swap", () => {
+    cleanup?.();
+    cleanup = null;
+  });
+</script>
