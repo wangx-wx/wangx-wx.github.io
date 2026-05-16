@@ -2,7 +2,7 @@
 title: "一个屏幕同时调度十个 AI 干活"
 pubDatetime: 2026-05-16T22:33:13+08:00
 author: "wx"
-description: "Anthropic 的新功能 Agent View 把"单线程对话"变成"任务面板调度"——多会话并行跑、后台独立运行、谁要拍板谁高亮。三分钟看懂怎么用,以及六个让你效率翻倍的小技巧。"
+description: "Anthropic 的新功能 Agent View 把“单线程对话”变成“任务面板调度”——多会话并行跑、后台独立运行、谁要拍板谁高亮。三分钟看懂怎么用,以及六个让你效率翻倍的小技巧。"
 draft: false
 tags:
   - AI
