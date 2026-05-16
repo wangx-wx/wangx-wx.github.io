@@ -10,6 +10,7 @@ import YearCountdown from "@/components/YearCountdown.astro";
 import NowSection from "@/components/NowSection.astro";
 import TechStack from "@/components/TechStack.astro";
 import FeaturedProjects from "@/components/FeaturedProjects.astro";
+import OpenSourceContributions from "@/components/OpenSourceContributions.astro";
 import getSortedPosts from "@/utils/getSortedPosts";
 import IconRss from "@/assets/icons/IconRss.svg";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
@@ -64,6 +65,7 @@ const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
     <NowSection />
     <TechStack />
     <FeaturedProjects />
+    <OpenSourceContributions />
 
     <blockquote
       class="my-8 border-l-4 border-accent bg-muted/60 px-5 py-4 italic"
